@@ -110,6 +110,7 @@ function Invoke-NetworkSpeedTest {
 $endTime = (Get-Date).AddMinutes($RunForMinutes)
 do {
     $start = Get-Date
+    Write-Host "Running Speedtest now..." -ForegroundColor Yellow
     Invoke-NetworkSpeedTest
 
     # compute next tick without overshooting beyond end window
@@ -139,7 +140,8 @@ function Start-SpeedTestLogger {
         [string]$LogPath = $LogPath,
         [switch]$AutoInstall = $AutoInstall
     )
-    & $PSCommandPath -RunForMinutes $RunForMinutes -IntervalMinutes $IntervalMinutes -LogPath $LogPath @($AutoInstall.IsPresent ? '-AutoInstall' : $null)
+    $autoInstallArg = if ($AutoInstall.IsPresent) { '-AutoInstall' } else { $null }
+    & $PSCommandPath -RunForMinutes $RunForMinutes -IntervalMinutes $IntervalMinutes -LogPath $LogPath $autoInstallArg
 }
 
 <# =========================
