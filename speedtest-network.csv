@@ -6,3 +6,12 @@ Timestamp,ComputerName,LatencyMs,DownloadMbps,UploadMbps,PacketLoss,ISP,ServerNa
 "2025-11-21T11:00:56","[computername]","11.616","931.64","946.12","0","VMWare","Shentel","Ashburn, VA",
 "2025-11-21T11:01:55","[computername]","12.242","921.85","946.36","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/d396c49a-fe5e-40c1-9b16-ac0a616b906e"
 "2025-11-21T11:02:56","[computername]","11.346","910.16","946.64","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/05438f39-0625-42b2-aac9-25d4fec67bea"
+"2025-11-21T11:03:54","[computername]","11.75","920.19","946.84","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/eb00fb9e-7aae-45f1-9f47-b363d5104e18"
+"2025-11-21T11:04:56","[computername]","11.882","927.55","946.87","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/6feb326c-9d89-4e74-b745-254aeb64fde1"
+"2025-11-21T11:05:56","[computername]","11.773","916.31","947.05","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/8510fb1f-f7b6-4468-8966-faabaef992b6"
+"2025-11-21T11:06:39","[computername]",,,,,"ERROR",,,
+"2025-11-21T11:12:58","[computername]","11.5","929","946.5","0","VMWare","Shentel","Ashburn, VA",
+"2025-11-21T11:13:58","[computername]","12.2","886.7","946.9","0","VMWare","Shentel","Ashburn, VA",
+"2025-11-21T11:15:01","[computername]","11.7","920.7","946.7","0","VMWare","Shentel","Ashburn, VA",
+"2025-11-21T11:15:59","[computername]","12.4","910.2","946.8","0","VMWare","Shentel","Ashburn, VA","https://www.speedtest.net/result/c/8aca2e4f-6a3b-4235-8611-e420ea071bb9"
+

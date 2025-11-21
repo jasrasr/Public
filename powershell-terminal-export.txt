@@ -10,3 +10,9 @@ Logged to C:\temp\powershell-exports\speedtest-network.csv : 2025-11-21T11:04:56
 Logged to C:\temp\powershell-exports\speedtest-network.csv : 2025-11-21T11:05:56  DL 916.31Mbps  UL 947.05Mbps  Ping 11.773ms
 Speed test failed at 2025-11-21T11:06:39 : speedtest returned no output.
 Completed run window of 10 minute(s) : Log file C:\temp\powershell-exports\speedtest-network.csv
+
+PS C:\Users\[username]> .\Wifi-Speed-Test-powershell.ps1 -runforminutes 10 -intervalminutes 1
+Logged to C:\temp\powershell-exports\speedtest-network.csv : 2025-11-21T11:12:58  DL 929Mbps  UL 946.5Mbps  Ping 11.5ms
+Logged to C:\temp\powershell-exports\speedtest-network.csv : 2025-11-21T11:13:58  DL 886.7Mbps  UL 946.9Mbps  Ping 12.2ms
+Logged to C:\temp\powershell-exports\speedtest-network.csv : 2025-11-21T11:15:01  DL 920.7Mbps  UL 946.7Mbps  Ping 11.7ms
+Next test in 36 seconds...
