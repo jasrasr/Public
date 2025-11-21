@@ -1,5 +1,5 @@
-# Revision : 1.3
-# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.3
+# Revision : 1.5
+# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.5
 # Author : Jason Lamb (with help from ChatGPT)
 # Created Date : 2025-10-21
 # Modified Date : 2025-11-21
@@ -69,13 +69,24 @@ if (-not $speedtestPath) {
     return
 }
 
+# --- Display log file paths ---
+Write-Host "`nSpeed Test Logger Started" -ForegroundColor Green
+Write-Host "CSV Log: $LogPath" -ForegroundColor Cyan
+Write-Host "JSON Log: $jsonLogPath" -ForegroundColor Cyan
+Write-Host "Duration: $RunForMinutes minutes | Interval: $IntervalMinutes minutes`n" -ForegroundColor Yellow
+
 # --- Core test function (Ookla JSON -> CSV line) ---
 function Invoke-NetworkSpeedTest {
     try {
         # Accept license/GDPR non-interactively and emit JSON
-        $raw = & $speedtestPath --accept-license --accept-gdpr -f json 2>$null
+        $raw = & $speedtestPath --accept-license --accept-gdpr -f json 2>&1 | Out-String
         if ([string]::IsNullOrWhiteSpace($raw)) {
             throw "speedtest returned no output."
+        }
+        # Check if output starts with { (valid JSON)
+        $raw = $raw.Trim()
+        if (-not $raw.StartsWith('{')) {
+            throw "speedtest error or unexpected output: $raw"
         }
         $j = $raw | ConvertFrom-Json
 
@@ -105,7 +116,7 @@ function Invoke-NetworkSpeedTest {
         } | Export-Csv -Path $LogPath -Append -NoTypeInformation -UseQuotes Always
         
         # Append to JSON log
-        $jsonData = Get-Content $jsonLogPath -Raw | ConvertFrom-Json
+        $jsonData = @(Get-Content $jsonLogPath -Raw | ConvertFrom-Json)
         $jsonData += [pscustomobject]@{
             Timestamp       = $ts
             ComputerName    = $env:COMPUTERNAME
@@ -140,7 +151,7 @@ function Invoke-NetworkSpeedTest {
         } | Export-Csv -Path $LogPath -Append -NoTypeInformation -UseQuotes Always
         
         # Append error to JSON log
-        $jsonData = Get-Content $jsonLogPath -Raw | ConvertFrom-Json
+        $jsonData = @(Get-Content $jsonLogPath -Raw | ConvertFrom-Json)
         $jsonData += [pscustomobject]@{
             Timestamp       = $ts
             ComputerName    = $env:COMPUTERNAME
@@ -206,6 +217,16 @@ function Start-SpeedTestLogger {
 
 <# =========================
 CHANGELOG / WHAT CHANGED
+
+Rev 1.5 (2025-11-21)
+- Fixed JSON array handling to prevent "op_Addition" errors
+- Improved error detection and reporting for speedtest failures
+- Added startup banner showing full CSV/JSON log paths and test parameters
+- Better handling of speedtest SSL errors and rate limiting messages
+
+Rev 1.4 (2025-11-21)
+- Added parameter validation: rounds RunForMinutes and IntervalMinutes to whole numbers if decimals are provided
+- Displays yellow notice when rounding occurs
 
 Rev 1.3 (2025-11-21)
 - Added JSON output file alongside CSV (same name with .json extension)
