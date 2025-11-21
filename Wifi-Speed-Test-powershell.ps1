@@ -1,4 +1,4 @@
-# Revision : 1.1
+# Revision : 1.2
 # Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.1
 # Author : Jason Lamb (with help from ChatGPT)
 # Created Date : 2025-10-21
@@ -144,6 +144,9 @@ function Start-SpeedTestLogger {
 
 <# =========================
 CHANGELOG / WHAT CHANGED
+
+Rev 1.2 (2025-11-21)
+- change default to 10 min for 24 hours (1440 min = 24 hours)
 
 Rev 1.1 (2025-11-21)
 - Added countdown timer showing seconds until next test
