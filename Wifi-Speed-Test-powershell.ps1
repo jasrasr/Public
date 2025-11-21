@@ -11,6 +11,19 @@ param(
     [switch]$AutoInstall                            # attempt winget install of Ookla CLI if not found
 )
 
+# --- Validate and round parameters to whole numbers ---
+$originalRunForMinutes = $RunForMinutes
+$originalIntervalMinutes = $IntervalMinutes
+$RunForMinutes = [math]::Round($RunForMinutes)
+$IntervalMinutes = [math]::Round($IntervalMinutes)
+
+if ($RunForMinutes -ne $originalRunForMinutes) {
+    Write-Host "Notice: RunForMinutes rounded from $originalRunForMinutes to $RunForMinutes" -ForegroundColor Yellow
+}
+if ($IntervalMinutes -ne $originalIntervalMinutes) {
+    Write-Host "Notice: IntervalMinutes rounded from $originalIntervalMinutes to $IntervalMinutes" -ForegroundColor Yellow
+}
+
 # --- Prep: folders & header ---
 $logFolder = Split-Path -Path $LogPath -Parent
 $jsonLogPath = $LogPath -replace '\.csv$', '.json'
