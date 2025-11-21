@@ -61,9 +61,9 @@ function Invoke-NetworkSpeedTest {
         $j = $raw | ConvertFrom-Json
 
         # Ookla CLI bandwidth fields are bytes/sec; convert to Mbps (decimal)
-        $dlMbps = if ($j.download.bandwidth) { [math]::Round(($j.download.bandwidth * 8) / 1000000, 2) } else { $null }
-        $ulMbps = if ($j.upload.bandwidth)   { [math]::Round(($j.upload.bandwidth   * 8) / 1000000, 2) } else { $null }
-        $lat    = $j.ping.latency
+        $dlMbps = if ($j.download.bandwidth) { [math]::Round(($j.download.bandwidth * 8) / 1000000, 1) } else { $null }
+        $ulMbps = if ($j.upload.bandwidth)   { [math]::Round(($j.upload.bandwidth   * 8) / 1000000, 1) } else { $null }
+        $lat    = [math]::Round($j.ping.latency, 1)
         $loss   = if ($null -ne $j.packetLoss) { $j.packetLoss } else { $null }
         $isp    = $j.isp
         $srvN   = $j.server.name
@@ -123,6 +123,18 @@ do {
 
 Write-Host "Completed run window of ${RunForMinutes} minute(s) : Log file $LogPath"
 
+
+# --- Turn the script into a callable function when dot-sourced ---
+function Start-SpeedTestLogger {
+    param(
+        [int]$RunForMinutes = $RunForMinutes,
+        [int]$IntervalMinutes = $IntervalMinutes,
+        [string]$LogPath = $LogPath,
+        [switch]$AutoInstall = $AutoInstall
+    )
+    & $PSCommandPath -RunForMinutes $RunForMinutes -IntervalMinutes $IntervalMinutes -LogPath $LogPath @($AutoInstall.IsPresent ? '-AutoInstall' : $null)
+}
+
 <# =========================
 CHANGELOG / WHAT CHANGED (Rev 1.0)
 - New script to run Ookla speed tests on a loop for a specified duration.
@@ -137,26 +149,15 @@ USAGE EXAMPLES (dot-source then call)
 . .\Run-SpeedTest-Logger.ps1
 
 # 1) Default : run for 60 minutes, test every 5 minutes, pinned log
-Run-SpeedTest-Logger -RunForMinutes 60 -IntervalMinutes 5
+Start-SpeedTestLogger -RunForMinutes 60 -IntervalMinutes 5
 
 # 2) Custom interval every 1 minute for 15 minutes
-Run-SpeedTest-Logger -RunForMinutes 15 -IntervalMinutes 1
+Start-SpeedTestLogger -RunForMinutes 15 -IntervalMinutes 1
 
 # 3) Specify a custom pinned log path
-Run-SpeedTest-Logger -RunForMinutes 30 -IntervalMinutes 5 -LogPath "C:\temp\powershell-exports\office-speed.csv"
+Start-SpeedTestLogger -RunForMinutes 30 -IntervalMinutes 5 -LogPath "C:\temp\powershell-exports\office-speed.csv"
 
 # 4) Attempt auto-install of Ookla CLI via winget if missing
-Run-SpeedTest-Logger -RunForMinutes 30 -IntervalMinutes 5 -AutoInstall
+Start-SpeedTestLogger -RunForMinutes 30 -IntervalMinutes 5 -AutoInstall
 
 #> 
-
-# --- Turn the script into a callable function when dot-sourced ---
-function Run-SpeedTest-Logger {
-    param(
-        [int]$RunForMinutes = $RunForMinutes,
-        [int]$IntervalMinutes = $IntervalMinutes,
-        [string]$LogPath = $LogPath,
-        [switch]$AutoInstall = $AutoInstall
-    )
-    & $PSCommandPath -RunForMinutes $RunForMinutes -IntervalMinutes $IntervalMinutes -LogPath $LogPath @($AutoInstall.IsPresent ? '-AutoInstall' : $null)
-}
