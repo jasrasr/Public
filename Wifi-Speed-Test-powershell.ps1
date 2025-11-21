@@ -1,8 +1,8 @@
-# Revision : 1.0
-# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.0
+# Revision : 1.2
+# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.2
 # Author : Jason Lamb (with help from ChatGPT)
 # Created Date : 2025-10-21
-# Modified Date : 2025-10-21
+# Modified Date : 2025-11-21
 
 param(
     [int]$RunForMinutes = 60,                       # total runtime window
@@ -117,7 +117,13 @@ do {
     $now = Get-Date
     $sleepMs = [int]([math]::Max(0, ($nextPlanned - $now).TotalMilliseconds))
     if ($sleepMs -gt 0 -and (Get-Date) -lt $endTime) {
-        Start-Sleep -Milliseconds $sleepMs
+        # Countdown timer display
+        $remainingSeconds = [int]($sleepMs / 1000)
+        for ($i = $remainingSeconds; $i -gt 0; $i--) {
+            Write-Host "`rNext test in: $i seconds...  " -NoNewline -ForegroundColor Cyan
+            Start-Sleep -Seconds 1
+        }
+        Write-Host "`r" -NoNewline  # Clear the countdown line
     }
 } while ((Get-Date) -lt $endTime)
 
@@ -136,7 +142,16 @@ function Start-SpeedTestLogger {
 }
 
 <# =========================
-CHANGELOG / WHAT CHANGED (Rev 1.0)
+CHANGELOG / WHAT CHANGED
+
+Rev 1.2 (2025-11-21)
+- Added countdown timer showing seconds until next test
+- Improved user feedback during wait intervals
+
+Rev 1.1 (2025-11-21)
+- Rounded speed and latency values to 1 decimal place (was 2-3 decimals)
+
+Rev 1.0 (2025-10-21)
 - New script to run Ookla speed tests on a loop for a specified duration.
 - Appends results to a single pinned CSV log at C:\temp\powershell-exports\speedtest-network.csv.
 - Auto-detects speedtest.exe; optional -AutoInstall via winget.
