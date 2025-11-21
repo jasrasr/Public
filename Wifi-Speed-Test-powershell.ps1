@@ -1,5 +1,5 @@
-# Revision : 1.2
-# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.1
+# Revision : 1.3
+# Description : Run periodic internet speed tests (Ookla CLI if available) and append results to a pinned CSV log file for a specified duration and interval. Rev 1.3
 # Author : Jason Lamb (with help from ChatGPT)
 # Created Date : 2025-10-21
 # Modified Date : 2025-11-21
@@ -13,6 +13,7 @@ param(
 
 # --- Prep: folders & header ---
 $logFolder = Split-Path -Path $LogPath -Parent
+$jsonLogPath = $LogPath -replace '\.csv$', '.json'
 if (-not (Test-Path $logFolder)) {
     New-Item -Path $logFolder -ItemType Directory -Force | Out-Null
 }
@@ -22,6 +23,11 @@ if (-not (Test-Path $LogPath)) {
 Timestamp,ComputerName,LatencyMs,DownloadMbps,UploadMbps,PacketLoss,ISP,ServerName,ServerLocation,ResultUrl
 '@ | Out-File -FilePath $LogPath -Encoding UTF8 -Force
     Write-Host "Created log file $LogPath : with CSV header"
+}
+if (-not (Test-Path $jsonLogPath)) {
+    # Create empty JSON array
+    '[]' | Out-File -FilePath $jsonLogPath -Encoding UTF8 -Force
+    Write-Host "Created JSON log file $jsonLogPath"
 }
 
 # --- Locate or install Ookla Speedtest CLI ---
@@ -84,6 +90,22 @@ function Invoke-NetworkSpeedTest {
             ServerLocation  = $srvL
             ResultUrl       = $url
         } | Export-Csv -Path $LogPath -Append -NoTypeInformation -UseQuotes Always
+        
+        # Append to JSON log
+        $jsonData = Get-Content $jsonLogPath -Raw | ConvertFrom-Json
+        $jsonData += [pscustomobject]@{
+            Timestamp       = $ts
+            ComputerName    = $env:COMPUTERNAME
+            LatencyMs       = $lat
+            DownloadMbps    = $dlMbps
+            UploadMbps      = $ulMbps
+            PacketLoss      = $loss
+            ISP             = $isp
+            ServerName      = $srvN
+            ServerLocation  = $srvL
+            ResultUrl       = $url
+        }
+        $jsonData | ConvertTo-Json -Depth 10 | Out-File -FilePath $jsonLogPath -Encoding UTF8 -Force
 
         Write-Host "Logged to $LogPath : $ts  DL ${dlMbps}Mbps  UL ${ulMbps}Mbps  Ping ${lat}ms"
     }
@@ -103,14 +125,35 @@ function Invoke-NetworkSpeedTest {
             ServerLocation  = $null
             ResultUrl       = $null
         } | Export-Csv -Path $LogPath -Append -NoTypeInformation -UseQuotes Always
+        
+        # Append error to JSON log
+        $jsonData = Get-Content $jsonLogPath -Raw | ConvertFrom-Json
+        $jsonData += [pscustomobject]@{
+            Timestamp       = $ts
+            ComputerName    = $env:COMPUTERNAME
+            LatencyMs       = $null
+            DownloadMbps    = $null
+            UploadMbps      = $null
+            PacketLoss      = $null
+            ISP             = "ERROR"
+            ServerName      = $null
+            ServerLocation  = $null
+            ResultUrl       = $null
+        }
+        $jsonData | ConvertTo-Json -Depth 10 | Out-File -FilePath $jsonLogPath -Encoding UTF8 -Force
     }
 }
 
 # --- Scheduler loop (run for window with interval) ---
 $endTime = (Get-Date).AddMinutes($RunForMinutes)
+$totalTests = [math]::Floor($RunForMinutes / $IntervalMinutes)
+$currentTest = 0
+
 do {
     $start = Get-Date
-    Write-Host "Running Speedtest now..." -ForegroundColor Yellow
+    $currentTest++
+    $remainingTests = $totalTests - $currentTest
+    Write-Host "Running Speedtest $currentTest of $totalTests ($remainingTests remaining)..." -ForegroundColor Yellow
     Invoke-NetworkSpeedTest
 
     # compute next tick without overshooting beyond end window
@@ -129,7 +172,11 @@ do {
     }
 } while ((Get-Date) -lt $endTime)
 
-Write-Host "Completed run window of ${RunForMinutes} minute(s) : Log file $LogPath"
+Write-Host "Completed run window of ${RunForMinutes} minute(s) : Log files $LogPath and $jsonLogPath"
+
+# Open both log files in notepad
+Start-Process notepad $LogPath
+Start-Process notepad $jsonLogPath
 
 
 # --- Turn the script into a callable function when dot-sourced ---
@@ -147,8 +194,15 @@ function Start-SpeedTestLogger {
 <# =========================
 CHANGELOG / WHAT CHANGED
 
+Rev 1.3 (2025-11-21)
+- Added JSON output file alongside CSV (same name with .json extension)
+- Opens both CSV and JSON files in notepad when test run completes
+
 Rev 1.2 (2025-11-21)
-- change default to 10 min for 24 hours (1440 min = 24 hours)
+- Added test progress counter: "Running Speedtest X of Y (Z remaining)..."
+- Changed default runtime to 24 hours (1440 minutes) with 10-minute intervals
+- Added "Running Speedtest now..." prefix message
+- Fixed PowerShell 5 compatibility (removed ternary operator)
 
 Rev 1.1 (2025-11-21)
 - Added countdown timer showing seconds until next test
