@@ -5,8 +5,8 @@
 # Modified Date : 2025-11-21
 
 param(
-    [int]$RunForMinutes = 60,                       # total runtime window
-    [int]$IntervalMinutes = 5,                      # wait between tests
+    [int]$RunForMinutes = 1440,                     # total runtime window (24 hours)
+    [int]$IntervalMinutes = 10,                     # wait between tests
     [string]$LogPath = "C:\temp\powershell-exports\speedtest-network.csv",  # pinned log file (CSV)
     [switch]$AutoInstall                            # attempt winget install of Ookla CLI if not found
 )
